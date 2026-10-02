@@ -1,0 +1,9 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+.qa/
+*.tsbuildinfo
+.env*
+!.env.example
+/Valentyn Melnychenko Full-Stack CV.md
