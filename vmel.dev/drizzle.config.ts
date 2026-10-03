@@ -4,5 +4,5 @@ export default defineConfig({
   dialect: 'postgresql',
   schema: './src/db/schema.ts',
   out: './drizzle',
-  dbCredentials: { url: process.env.DATABASE_URL || 'postgres://vmel:vmel@127.0.0.1:5440/vmel' },
+  dbCredentials: { url: process.env.DATABASE_URL || 'postgres://vmel@127.0.0.1:5440/vmel' },
 });

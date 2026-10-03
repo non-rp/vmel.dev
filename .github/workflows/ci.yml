@@ -26,25 +26,23 @@ jobs:
         image: postgres:17-alpine
         env:
           POSTGRES_USER: vmel
-          POSTGRES_PASSWORD: test-only-postgres-password
+          POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_DB: vmel_test
-        ports: ['5432:5432']
+        ports: ['127.0.0.1:5432:5432']
         options: >-
           --health-cmd "pg_isready -U vmel -d vmel_test"
           --health-interval 5s --health-timeout 3s --health-retries 12
       redis:
         image: redis:8-alpine
-        ports: ['6379:6379']
+        ports: ['127.0.0.1:6379:6379']
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 3s --health-retries 12
     env:
-      DATABASE_URL: postgres://vmel:test-only-postgres-password@127.0.0.1:5432/vmel_test
+      DATABASE_URL: postgres://vmel@127.0.0.1:5432/vmel_test
       REDIS_URL: redis://127.0.0.1:6379
       BETTER_AUTH_URL: http://127.0.0.1:4173
-      BETTER_AUTH_SECRET: test-only-auth-secret-at-least-thirty-two-characters
       ADMIN_EMAIL: admin@example.invalid
-      ADMIN_PASSWORD: test-only-administrator-password
       RUN_ADMIN_E2E: 'true'
       NEXT_TELEMETRY_DISABLED: '1'
     defaults:
@@ -60,6 +58,14 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: vmel.dev/package-lock.json
+      - name: Generate isolated test credentials
+        run: |
+          set -euo pipefail
+          for name in BETTER_AUTH_SECRET ADMIN_PASSWORD POSTGRES_PASSWORD; do
+            value=$(openssl rand -hex 32)
+            echo "::add-mask::$value"
+            printf '%s=%s\n' "$name" "$value" >> "$GITHUB_ENV"
+          done
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
@@ -78,7 +84,6 @@ jobs:
         env:
           RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           VMEL_IMAGE: vmel-portfolio:${{ github.event.pull_request.head.sha || github.sha }}
-          POSTGRES_PASSWORD: test-only-container-password
           BETTER_AUTH_URL: http://127.0.0.1:4174
         run: |
           set -euo pipefail

@@ -44,7 +44,8 @@ test('mobile menu, keyboard dismissal, narrow layouts and reduced motion', async
   await expect(page.getByRole('navigation')).toBeHidden();
   for (const width of [320, 390, 768, 1024]) {
     await page.setViewportSize({ width, height: 844 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const overflow = await page.evaluate(() => [...document.querySelectorAll('body *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).map(element => ({ tag: element.tagName, class: element.className, right: element.getBoundingClientRect().right })).slice(0, 12));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `Overflow at ${width}px: ${JSON.stringify(overflow)}`).toBe(true);
   }
   await page.setViewportSize({ width: 390, height: 844 });
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
