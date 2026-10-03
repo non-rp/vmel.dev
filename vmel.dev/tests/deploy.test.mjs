@@ -11,7 +11,7 @@ const scratch = join(repo, '.qa', 'deploy-tests');
 const revision = 'a'.repeat(40);
 const previous = 'b'.repeat(40);
 
-async function fixture({ healthFails = false, publicFails = false, previousImage = true, corrupt = false } = {}) {
+async function fixture({ healthFails = false, publicFails = false, previousImage = true, corrupt = false, migrationFails = false, backupFails = false } = {}) {
   await mkdir(scratch, { recursive: true });
   const directory = await mkdtemp(join(scratch, 'run-'));
   const base = join(directory, 'vmel.dev', 'docker');
@@ -26,16 +26,17 @@ async function fixture({ healthFails = false, publicFails = false, previousImage
   await writeFile(join(base, 'compose.yml'), 'name: vmel-portfolio\n');
   if (previousImage) await writeFile(join(base, 'current-image'), `vmel-portfolio:${previous}\n`);
   const scripts = {
-    docker: `#!/usr/bin/env bash\necho "docker $* IMAGE=$VMEL_IMAGE" >> "$VMEL_DEPLOY_ROOT/events"\nif [[ "$1" == load ]]; then cat >/dev/null; fi\nif [[ "$1" == compose && "$*" == *'up --detach'* ]]; then printf '%s' "$VMEL_IMAGE" > "$VMEL_DEPLOY_ROOT/running-image"; fi\n`,
+    docker: `#!/usr/bin/env bash\necho "docker $* IMAGE=$VMEL_IMAGE" >> "$VMEL_DEPLOY_ROOT/events"\nif [[ "$1" == load ]]; then cat >/dev/null; fi\nif [[ "$*" == *scripts/migrate.mjs* && "$VMEL_FAIL_MIGRATION" == true ]]; then exit 1; fi\nif [[ "$*" == *pg_dump* && "$VMEL_FAIL_BACKUP" == true ]]; then exit 1; fi\nif [[ "$1" == compose && "$*" == *'up --detach'* && "$*" == *' web'* ]]; then printf '%s' "$VMEL_IMAGE" > "$VMEL_DEPLOY_ROOT/running-image"; fi\n`,
     gzip: '#!/usr/bin/env bash\ncat "${@: -1}"\n',
     curl: `#!/usr/bin/env bash\nimage=$(cat "$VMEL_DEPLOY_ROOT/running-image")\nif [[ "$image" == "vmel-portfolio:${revision}" ]] && { [[ "$VMEL_FAIL_HEALTH" == true ]] || { [[ "$VMEL_FAIL_PUBLIC" == true ]] && [[ "$*" == *https://vmel.dev/release.txt* ]]; }; }; then echo incorrect-release; else echo "$image" | cut -d: -f2; fi\n`,
     flock: '#!/usr/bin/env bash\nexit 0\n',
+    install: '#!/usr/bin/env bash\nmkdir -p "${@: -1}"\n',
   };
   for (const [name, content] of Object.entries(scripts)) await writeFile(join(bin, name), content, { mode: 0o755 });
   const relative = directory.slice(repo.length + 1).replaceAll('\\', '/');
   const run = (sha = revision) => spawnSync(bash, ['-c', 'export VMEL_DEPLOY_ROOT="$PWD/$TEST_DIRECTORY/vmel.dev/docker"; export PATH="$PWD/$TEST_DIRECTORY/bin:$PATH"; bash vmel.dev/scripts/deploy-docker.sh "$TEST_REVISION"'], {
     cwd: repo,
-    env: { ...process.env, TEST_DIRECTORY: relative, TEST_REVISION: sha, VMEL_FAIL_HEALTH: String(healthFails), VMEL_FAIL_PUBLIC: String(publicFails), VMEL_VERIFY_PUBLIC: String(publicFails) },
+    env: { ...process.env, TEST_DIRECTORY: relative, TEST_REVISION: sha, VMEL_FAIL_HEALTH: String(healthFails), VMEL_FAIL_PUBLIC: String(publicFails), VMEL_VERIFY_PUBLIC: String(publicFails), VMEL_FAIL_MIGRATION: String(migrationFails), VMEL_FAIL_BACKUP: String(backupFails) },
     encoding: 'utf8',
   });
   return { base, run };
@@ -76,9 +77,27 @@ test('an invalid SHA is rejected before any Docker mutation', async () => {
   await assert.rejects(readFile(join(base, 'events')), { code: 'ENOENT' });
 });
 
-test('a failed first release removes only the new Compose project', async () => {
+test('a failed first release stops the web service and preserves the database', async () => {
   const { base, run } = await fixture({ healthFails: true, previousImage: false });
   assert.equal(run().status, 1);
-  assert.match(await readFile(join(base, 'events'), 'utf8'), /--project-name vmel-portfolio --file compose.yml down/);
+  assert.match(await readFile(join(base, 'events'), 'utf8'), /--project-name vmel-portfolio --file compose.yml stop web/);
   await assert.rejects(readFile(join(base, 'current-image')), { code: 'ENOENT' });
+});
+
+test('a failed migration restores the old app without deleting database volumes', async () => {
+  const { base, run } = await fixture({ migrationFails: true });
+  assert.equal(run().status, 1);
+  assert.equal((await readFile(join(base, 'current-image'), 'utf8')).trim(), `vmel-portfolio:${previous}`);
+  const events = await readFile(join(base, 'events'), 'utf8');
+  assert.match(events, /pg_dump/);
+  assert.match(events, /scripts\/migrate.mjs/);
+  assert.doesNotMatch(events, /down|--volumes/);
+});
+
+test('a failed backup prevents migration and leaves the previous release active', async () => {
+  const { base, run } = await fixture({ backupFails: true });
+  assert.equal(run().status, 1);
+  const events = await readFile(join(base, 'events'), 'utf8');
+  assert.doesNotMatch(events, /scripts\/migrate.mjs/);
+  assert.equal((await readFile(join(base, 'current-image'), 'utf8')).trim(), `vmel-portfolio:${previous}`);
 });

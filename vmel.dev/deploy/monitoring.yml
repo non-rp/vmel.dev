@@ -1,0 +1,30 @@
+name: vmel-monitoring
+services:
+  hub:
+    image: henrygd/beszel:latest@sha256:6b39a8b64f9b15d00a25e7683e31a93c46161182a54f62713525107064e10599
+    restart: unless-stopped
+    environment:
+      APP_URL: http://localhost:8090
+    ports: ["127.0.0.1:8090:8090"]
+    volumes: ["./hub-data:/beszel_data", "./socket:/beszel_socket"]
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "2" }
+  agent:
+    image: henrygd/beszel-agent:latest@sha256:f27b1aa2c68404bc5b9e1a2ab36653bd9b4ee14f6299862f09cd5051a4134767
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      HUB_URL: http://localhost:8090
+      TOKEN: ${BESZEL_TOKEN:-}
+      KEY: ${BESZEL_KEY:-}
+    volumes:
+      - ./agent-data:/var/lib/beszel-agent
+      - ./socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    mem_limit: 64m
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "2" }

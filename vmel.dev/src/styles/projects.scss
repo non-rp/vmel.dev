@@ -1,0 +1,38 @@
+.project-section {
+  border-bottom: 1px solid var(--line);
+
+  .project-empty { color: #aaa3b3; line-height: 1.8; max-width: 520px; }
+  .project-group + .project-group { margin-top: 48px; }
+  .project-group-title { font-size: 10px; color: #bfb2cd; margin-bottom: 20px; }
+  .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+
+  .project-card {
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(145deg, #19121f, #101010);
+
+    &-top { display: flex; justify-content: space-between; gap: 16px; font-size: 8px; color: #aaa0b6; }
+    h4 { font-size: 28px; font-weight: 400; line-height: 1.2; margin: 28px 0 18px; }
+    h4 a:hover { color: #e1bdff; }
+    > p { color: #b4abbf; line-height: 1.7; font-size: 14px; }
+    .text-link { margin-top: 28px; }
+  }
+}
+
+.case-page {
+  padding-block: 72px 112px;
+  max-width: 940px;
+  .case-kicker { color: #bfb2cd; margin: 70px 0 22px; font-size: 10px; }
+  h1 { font-size: clamp(40px, 6vw, 72px); letter-spacing: -.05em; line-height: 1.1; font-weight: 400; overflow-wrap: anywhere; }
+  .case-summary { font-size: 21px; color: #c2b9cc; line-height: 1.6; margin-top: 28px; }
+  .case-body { border-top: 1px solid var(--line); margin-top: 48px; padding-top: 24px; }
+  .case-body p { white-space: pre-line; line-height: 1.9; margin-top: 24px; color: #c1b8cb; }
+  .case-links { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 48px; }
+}
+
+@media (max-width: 760px) {
+  .project-section .project-grid { grid-template-columns: 1fr; }
+  .project-section .project-card { padding: 24px; }
+  .case-page { padding-top: 36px; }
+}

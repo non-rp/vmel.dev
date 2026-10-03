@@ -5,15 +5,15 @@
 - Modify files only inside `D:/work/Pets/vmel.dev`. Do not install skills globally or edit sibling projects, user settings or shared configuration.
 - Do not read or write `memory.md`, `MEMORY.md`, persistent agent memories or past-activity archives. Work from the current request, current repository files, commands and applicable documentation.
 - Other project folders may be inspected read-only when the user authorizes them as research inputs. Never copy their credentials, databases, customer data or proprietary source into this public repository.
-- Remote GitHub and VPS mutations must stay within the user's explicitly authorized work. If a local-only restriction makes deployment authorization ambiguous, finish and verify the local implementation before clarifying the remote step.
+- The user authorized this portfolio's VPS setup, Docker delivery and monitoring. Preserve other projects and host configuration. Remote GitHub and VPS mutations must stay within the user's explicitly authorized work. If a local-only restriction makes deployment authorization ambiguous, finish and verify the local implementation before clarifying the remote step.
 - Do not delegate work to other agents unless the user explicitly requests it.
 
 ## Repository map
 
 - Git repository root: this directory. Application root: `vmel.dev/`.
-- Application: React, TypeScript, Vite and Three.js; the production output is static.
+- Application: Next.js App Router, React, strict TypeScript, SCSS and Three.js. PostgreSQL/Drizzle own persistent data; Redis caches public queries; Zustand owns client UI preferences.
 - `vmel.dev/src/content.ts` holds profile data; `DESIGN.md` holds the visual reference.
-- `vmel.dev/tests/` contains browser and deployment tests.
+- `vmel.dev/tests/` contains Vitest validation tests, Playwright browser/authentication tests and isolated deployment tests.
 - `.github/workflows/ci.yml` builds, checks and packages the site on GitHub-hosted Linux runners.
 - `vmel.dev/deploy/` and `vmel.dev/scripts/deploy-docker.sh` define Docker delivery. See `docs/deployment.md` before deployment work.
 - `.qa/` is ignored local scratch space. Keep caches, temporary files, private keys and browser evidence there; never stage them.
