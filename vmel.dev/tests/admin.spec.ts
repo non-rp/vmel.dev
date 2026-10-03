@@ -62,6 +62,12 @@ test('authentication, owner editing, draft privacy, cache invalidation and order
     await page.reload();
     const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(accessibility.violations).toEqual([]);
+    await page.screenshot({ path: test.info().outputPath('admin.png'), fullPage: true });
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: `Delete ${data.title}`, exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText('Changes saved.');
+    expect((await api.delete(`/api/admin/projects/${another.id}`, { headers: { Origin: origin } })).status()).toBe(204);
+    expect(await (await request.get('/')).text()).not.toContain('Test personal project');
   } finally {
     const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
     try { await pool.query('DELETE FROM projects WHERE slug = $1 OR slug = $2', [data.slug, `${data.slug}-personal`]); }

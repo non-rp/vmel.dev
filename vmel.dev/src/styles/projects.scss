@@ -32,6 +32,7 @@
 }
 
 @media (max-width: 760px) {
+  .project-section .section-heading { flex-direction: column; align-items: flex-start; }
   .project-section .project-grid { grid-template-columns: 1fr; }
   .project-section .project-card { padding: 24px; }
   .case-page { padding-top: 36px; }

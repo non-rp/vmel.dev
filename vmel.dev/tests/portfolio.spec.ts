@@ -27,6 +27,7 @@ test('desktop renders graphics, handles interactions, and has no accessibility v
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(results.violations).toEqual([]);
   expect(errors).toEqual([]);
+  await page.screenshot({ path: test.info().outputPath('desktop.png'), fullPage: true });
 });
 
 test('mobile menu, keyboard dismissal, narrow layouts and reduced motion', async ({ page }) => {
@@ -50,6 +51,7 @@ test('mobile menu, keyboard dismissal, narrow layouts and reduced motion', async
   await page.setViewportSize({ width: 390, height: 844 });
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(results.violations).toEqual([]);
+  await page.screenshot({ path: test.info().outputPath('mobile.png'), fullPage: true });
 });
 
 test('a WebGL failure preserves the page and the illustrated fallback', async ({ page }) => {
