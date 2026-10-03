@@ -1,0 +1,24 @@
+name: vmel-portfolio
+
+services:
+  web:
+    image: ${VMEL_IMAGE:?Set VMEL_IMAGE to the tested release image}
+    pull_policy: never
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4174:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,uid=101,gid=101
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 128m
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

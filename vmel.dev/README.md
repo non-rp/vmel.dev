@@ -47,6 +47,12 @@ node scripts/capture.mjs
 
 ## Деплой
 
+GitHub Actions и Docker-деплой описаны в [docs/deployment.md](../docs/deployment.md).
+Production-доставка пока выключена; сначала нужно выбрать окончательный стек,
+подготовить SSH secrets и переключить Nginx. Команды ниже относятся к прежнему
+деплою статических файлов. После перехода на Docker этот скрипт не запускайте:
+он вернёт конфигурацию Nginx к обслуживанию файлов.
+
 ```powershell
 powershell.exe -ExecutionPolicy Bypass -File scripts/deploy.ps1
 ```

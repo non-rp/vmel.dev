@@ -22,6 +22,13 @@ Run these commands from the application directory:
 
 ```sh
 npm run build
+npm run lint
+npm run typecheck
+npm run test:deploy
 npx playwright install chromium
 npm run test:e2e
 ```
+
+Project rules are in [AGENTS.md](AGENTS.md), and repository-local skills live in
+[.agents/skills](.agents/skills). See [CI and deployment](docs/deployment.md) for
+the Docker release workflow and the production setup still required.
