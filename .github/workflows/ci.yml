@@ -1,0 +1,175 @@
+name: CI and Docker delivery
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the tested main-branch release to the configured VPS
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: verify-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: vmel
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: vmel_test
+        ports: ['127.0.0.1:5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U vmel -d vmel_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+      redis:
+        image: redis:8-alpine
+        ports: ['127.0.0.1:6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      DATABASE_URL: postgres://vmel@127.0.0.1:5432/vmel_test
+      REDIS_URL: redis://127.0.0.1:6379
+      BETTER_AUTH_URL: http://127.0.0.1:4173
+      ADMIN_EMAIL: admin@example.invalid
+      RUN_ADMIN_E2E: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+    defaults:
+      run:
+        working-directory: vmel.dev
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: vmel.dev/package-lock.json
+      - name: Generate isolated test credentials
+        run: |
+          set -euo pipefail
+          for name in BETTER_AUTH_SECRET ADMIN_PASSWORD POSTGRES_PASSWORD; do
+            value=$(openssl rand -hex 32)
+            echo "::add-mask::$value"
+            printf '%s=%s\n' "$name" "$value" >> "$GITHUB_ENV"
+          done
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run db:migrate
+      - run: npm run db:admin
+      - run: npm run test:deploy
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Build the tested Docker release
+        env:
+          RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: docker build --build-arg "RELEASE_SHA=$RELEASE_SHA" --tag "vmel-portfolio:$RELEASE_SHA" .
+      - name: Smoke-test the container
+        env:
+          RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          VMEL_IMAGE: vmel-portfolio:${{ github.event.pull_request.head.sha || github.sha }}
+          BETTER_AUTH_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          trap 'docker compose --file deploy/compose.yml down' EXIT
+          docker compose --file deploy/compose.yml config --quiet
+          docker compose --file deploy/compose.yml up --detach --wait --wait-timeout 90 postgres redis
+          docker compose --file deploy/compose.yml run --rm --no-deps web node scripts/migrate.mjs
+          docker compose --file deploy/compose.yml up --detach --wait --wait-timeout 90 web
+          test "$(curl --fail --silent --show-error http://127.0.0.1:4174/release.txt)" = "$RELEASE_SHA"
+          curl --fail --silent --show-error http://127.0.0.1:4174/ | grep -q 'Valentyn Melnychenko'
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4174/does-not-exist)" = 404
+      - name: Package the verified image
+        env:
+          RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/delivery
+          docker save "vmel-portfolio:$RELEASE_SHA" | gzip > ".qa/delivery/vmel-$RELEASE_SHA.tar.gz"
+          cd .qa/delivery
+          sha256sum "vmel-$RELEASE_SHA.tar.gz" > "vmel-$RELEASE_SHA.tar.gz.sha256"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: docker-release-${{ github.event.pull_request.head.sha || github.sha }}
+          path: vmel.dev/.qa/delivery/*
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: browser-evidence-${{ github.run_id }}
+          path: |
+            vmel.dev/test-results/
+            vmel.dev/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && (vars.DEPLOY_ENABLED == 'true' || inputs.deploy == true)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://vmel.dev
+    concurrency:
+      group: vmel-production
+      cancel-in-progress: false
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+      RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: docker-release-${{ github.event.pull_request.head.sha || github.sha }}
+          path: delivery
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          : "${VPS_HOST:?Missing VPS_HOST}" "${VPS_USER:?Missing VPS_USER}" "${VPS_SSH_KEY:?Missing VPS_SSH_KEY}" "${VPS_KNOWN_HOSTS:?Missing VPS_KNOWN_HOSTS}"
+          VPS_PORT="${VPS_PORT:-22}"
+          [[ "$VPS_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
+          [[ "$VPS_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$VPS_PORT" =~ ^[0-9]{1,5}$ ]] && (( VPS_PORT > 0 && VPS_PORT < 65536 ))
+          install -d -m 700 "$RUNNER_TEMP/vmel-ssh"
+          printf '%s\n' "$VPS_SSH_KEY" > "$RUNNER_TEMP/vmel-ssh/key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$RUNNER_TEMP/vmel-ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/vmel-ssh/key" "$RUNNER_TEMP/vmel-ssh/known_hosts"
+          printf 'VPS_PORT=%s\n' "$VPS_PORT" >> "$GITHUB_ENV"
+      - name: Transfer and activate the release
+        run: |
+          set -euo pipefail
+          options=(-i "$RUNNER_TEMP/vmel-ssh/key" -o "UserKnownHostsFile=$RUNNER_TEMP/vmel-ssh/known_hosts" -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=15)
+          target="$VPS_USER@$VPS_HOST"
+          cp vmel.dev/deploy/compose.yml vmel.dev/scripts/deploy-docker.sh delivery/
+          tar -czf - -C delivery "vmel-$RELEASE_SHA.tar.gz" "vmel-$RELEASE_SHA.tar.gz.sha256" compose.yml deploy-docker.sh |
+            ssh "${options[@]}" -p "$VPS_PORT" "$target" "vmel-upload $RELEASE_SHA"
+          ssh "${options[@]}" -p "$VPS_PORT" "$target" "vmel-deploy $RELEASE_SHA"
+          test "$(curl --fail --silent --show-error --max-time 20 https://vmel.dev/release.txt)" = "$RELEASE_SHA"
+      - name: Remove runner key material
+        if: always()
+        run: rm -f -- "$RUNNER_TEMP/vmel-ssh/key" "$RUNNER_TEMP/vmel-ssh/known_hosts"

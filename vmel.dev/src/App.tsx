@@ -1,32 +1,39 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import Sculpture from './Sculpture';
 import { profile } from './content';
+import { usePreferences } from './stores/preferences';
+import type { PublicProject } from './lib/project-validation';
 
 function Arrow({ diagonal = false }: { diagonal?: boolean }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d={diagonal ? 'M5 19 19 5M5 5h14v14' : 'M4 12h16m-6-6 6 6-6 6'} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
 function useMotion() {
-  const [motion, setMotion] = useState(() => {
-    try { const saved = localStorage.getItem('vmel-motion'); if (saved) return saved === 'on'; } catch { /* Storage can be unavailable in privacy mode. */ }
-    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  });
+  const motion = usePreferences((state) => state.motion);
+  const hydrated = usePreferences((state) => state.hydrated);
+  const setMotion = usePreferences((state) => state.setMotion);
+  const hydrate = usePreferences((state) => state.hydrate);
+  useEffect(() => { hydrate(); }, [hydrate]);
   useEffect(() => {
+    if (!hydrated) return;
     document.documentElement.dataset.motion = motion ? 'on' : 'off';
-    try { localStorage.setItem('vmel-motion', motion ? 'on' : 'off'); } catch { /* Motion still works without storage. */ }
-  }, [motion]);
+  }, [motion, hydrated]);
   return [motion, setMotion] as const;
 }
 
 function LocalTime() {
   const format = () => new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Helsinki', hour: '2-digit', minute: '2-digit' }).format(new Date());
-  const [time, setTime] = useState(format);
-  useEffect(() => { const timer = setInterval(() => setTime(format()), 30000); return () => clearInterval(timer); }, []);
+  const [time, setTime] = useState('--:--');
+  useEffect(() => { const update = () => setTime(format()); update(); const timer = setInterval(update, 30000); return () => clearInterval(timer); }, []);
   return <span>FINLAND <span className="time-separator">/</span> {time}</span>;
 }
 
-export default function App() {
+export default function App({ projects }: { projects: PublicProject[] }) {
   const [motion, setMotion] = useMotion();
+  const [year] = useState(() => new Date().getFullYear());
   const [menuOpen, setMenuOpen] = useState(false);
   const [wireframe, setWireframe] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -64,6 +71,7 @@ export default function App() {
     <header className="header">
       <a className="wordmark" href="#" aria-label="vmel home">vmel<span className="wordmark-dot">.</span><span className="wordmark-slash">/</span></a>
       <nav id="navigation" className={`navigation ${menuOpen ? 'navigation-open' : ''}`} aria-label="Main navigation">
+        <a href="#work" onClick={() => setMenuOpen(false)}>Work <span>00</span></a>
         <a href="#expertise" onClick={() => setMenuOpen(false)}>Expertise <span>01</span></a>
         <a href="#about" onClick={() => setMenuOpen(false)}>About <span>02</span></a>
         <a href="#contact" onClick={() => setMenuOpen(false)}>Contact <span>03</span></a>
@@ -96,6 +104,25 @@ export default function App() {
       </section>
 
       <div className="skills-band" aria-label="Technology stack"><div className="container skills-inner"><span className="mono skills-label">TOOLS OF THE TRADE</span><div className="skills-list"><span>React</span><i>+</i><span>Next.js</span><i>+</i><span>TypeScript</span><i>+</i><span>WordPress</span><i>+</i><span>Node.js</span><i>+</i><span>CI/CD</span></div></div></div>
+
+      <section id="work" className="project-section container section" aria-labelledby="work-heading">
+        <div className="section-kicker reveal"><span className="mono">00 / SELECTED WORK</span><span className="mono section-note">THE PROBLEM. THE DECISIONS. THE DELIVERY.</span></div>
+        <div className="section-heading reveal"><h2 id="work-heading">Engineering,<br /><em>in context.</em></h2><p>Content platforms. Commerce.<br />The systems behind the experience.</p></div>
+        {projects.length === 0 && <p className="project-empty">Detailed case studies are being prepared. Explore my capabilities below.</p>}
+        {(['commercial', 'personal'] as const).map((kind) => {
+          const group = projects.filter((project) => project.kind === kind);
+          if (!group.length) return null;
+          return <div className="project-group" key={kind}>
+            <h3 className="mono project-group-title">{kind === 'commercial' ? 'COMMERCIAL EXPERIENCE' : 'PERSONAL PROJECTS'}</h3>
+            <div className="project-grid">{group.map((project, index) => <article className="project-card" key={project.id}>
+              <div className="project-card-top mono"><span>{String(index + 1).padStart(2, '0')}</span><span>{kind === 'commercial' ? 'CASE STUDY' : 'INDEPENDENT PROJECT'}</span></div>
+              <h4><Link href={`/projects/${project.slug}`}>{project.title} <span aria-hidden="true">↗</span></Link></h4>
+              <p>{project.summary}</p><div className="tags">{project.technologies.map((technology) => <span key={technology}>{technology}</span>)}</div>
+              <Link className="text-link" href={`/projects/${project.slug}`}>Read the case <Arrow diagonal /></Link>
+            </article>)}</div>
+          </div>;
+        })}
+      </section>
 
       <section id="expertise" className="expertise container section" aria-labelledby="expertise-heading">
         <div className="section-kicker reveal"><span className="mono">01 / EXPERTISE</span><span className="mono section-note">DESIGNED WITH INTENT. BUILT TO LAST.</span></div>
@@ -130,6 +157,6 @@ export default function App() {
       <section id="contact" className="contact section" aria-labelledby="contact-heading"><div className="container"><div className="section-kicker reveal"><span className="mono">03 / NEXT CHAPTER</span><span className="mono section-note">GOOD THINGS START WITH A CONVERSATION</span></div><div className="contact-main reveal"><h2 id="contact-heading">Have something<br /><em>in mind?</em></h2><a className="contact-orb" href={profile.email ? `mailto:${profile.email}` : profile.linkedin} target={profile.email ? undefined : '_blank'} rel="noopener noreferrer" aria-label={profile.email ? 'Send Valentyn an email' : 'Connect with Valentyn on LinkedIn'}><Arrow diagonal /></a></div><div className="contact-bottom reveal"><p>A product to build. A problem to solve.<br />Or just a good conversation.</p><div className="contact-links"><a className="text-link" href={profile.linkedin} target="_blank" rel="noopener noreferrer">Let’s connect on LinkedIn <Arrow diagonal /></a><button className="copy-link mono" onClick={copyContact}>{copied ? 'COPIED ✓' : 'COPY CONTACT LINK'} <span aria-hidden="true">⧉</span></button><span className="copy-status" role="status">{copyError ? 'Please use the LinkedIn link above.' : copied ? 'Contact link copied to clipboard.' : ''}</span></div></div></div></section>
     </main>
 
-    <footer className="footer container"><div className="footer-top"><a href="#" className="wordmark" aria-label="Back to top">vmel<span className="wordmark-dot">.</span><span className="wordmark-slash">/</span></a><p>Code with care.<br /><span>Build with character.</span></p><a href="#" className="back-top mono">BACK TO TOP <span>↑</span></a></div><div className="footer-bottom mono"><span>© {new Date().getFullYear()} VALENTYN MELNYCHENKO</span><button className="motion-toggle" onClick={() => setMotion(!motion)} aria-pressed={motion} aria-label="Enable animations"><span className={`motion-indicator ${motion ? 'active' : ''}`} /> MOTION {motion ? 'ON' : 'OFF'}</button><span>LAHTI, FINLAND <span className="footer-plus">+</span></span></div></footer>
+    <footer className="footer container"><div className="footer-top"><a href="#" className="wordmark" aria-label="Back to top">vmel<span className="wordmark-dot">.</span><span className="wordmark-slash">/</span></a><p>Code with care.<br /><span>Build with character.</span></p><a href="#" className="back-top mono">BACK TO TOP <span>↑</span></a></div><div className="footer-bottom mono"><span>© {year} VALENTYN MELNYCHENKO</span><button className="motion-toggle" onClick={() => setMotion(!motion)} aria-pressed={motion} aria-label="Enable animations"><span className={`motion-indicator ${motion ? 'active' : ''}`} /> MOTION {motion ? 'ON' : 'OFF'}</button><span>LAHTI, FINLAND <span className="footer-plus">+</span></span></div></footer>
   </>;
 }

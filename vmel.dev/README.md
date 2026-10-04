@@ -1,58 +1,50 @@
 # vmel.dev
 
-Портфолио Valentyn Melnychenko: английский язык, near-black canvas, сдержанный violet, геометрическая типографика и интерактивная металлическая 3D-форма. Визуальные решения основаны на `DESIGN.md`, сайт адаптирован под личное портфолио.
+Senior full-stack portfolio and owner workspace. Commercial cases are anonymized; personal projects can link to source and demos. No CV, client source, invented metrics or private assets are published.
 
-## Локальная разработка
+## Stack
 
-Нужен Node.js 22.12+; в Windows используйте `npm.cmd`, если PowerShell блокирует `npm.ps1`.
+Next.js App Router + React + TypeScript; SCSS and Three.js; Drizzle/PostgreSQL; Redis public-query cache; Better Auth owner sessions; Zod validation; Zustand UI state. Vitest and Playwright/axe cover validation, authentication and accessibility. Docker, GitHub Actions and host Nginx deliver the site; Beszel monitors the VPS.
 
-```powershell
-npm.cmd ci
-npm.cmd run dev
+## Development
+
+Use Node.js 24 (22.19 also passed local checks). Windows: use npm.cmd when PowerShell blocks npm.ps1. From this directory:
+
+```sh
+npm ci
+cp .env.example .env.local
+# Replace the example auth secret and owner password before use.
+docker compose -f deploy/development.yml up -d --wait
+npm run db:migrate
+npm run db:admin
+npm run dev
 ```
 
-Сборка и просмотр production-версии:
+The dev database stores data under the repository's ignored .qa/development folder. Container image storage belongs to Docker; run Docker only in an environment where that is authorized. Production uses its own private database and generated secrets. Owner login is /admin/login; public registration is disabled. Remove ADMIN_PASSWORD from your environment after bootstrap.
 
-```powershell
-npm.cmd run build
-npm.cmd run preview -- --port 4173
+## Checks
+
+```sh
+npm run lint
+npm run typecheck
+npm run test
+npm run test:deploy
+npm run build
+npm run test:e2e
 ```
 
-## Что где менять
+Playwright uses port 4173. Set BETTER_AUTH_URL=http://127.0.0.1:4173 for that server. Admin mutation tests additionally require RUN_ADMIN_E2E=true and a loopback database named vmel_test; CI prepares it automatically. Normal e2e runs only public checks.
 
-- `src/content.ts` — имя, роль, LinkedIn, email и вступление. Пока email не задан, контактные кнопки ведут в LinkedIn.
-- `src/App.tsx` — секции, профессиональные направления, тексты и навигация.
-- `src/styles.css` — дизайн-токены, адаптивная сетка и CSS-анимации.
-- `src/Sculpture.tsx` — Three.js: геометрия, материалы, освещение и реакция на курсор.
-- `index.html` — SEO, Open Graph и статический вариант для браузеров без JavaScript.
-- `deploy/nginx.conf` — HTTPS, редиректы, сжатие, кэш ресурсов и заголовки.
+## Files
 
-Данные о профессиональном опыте и местоположении взяты из публичного [LinkedIn](https://www.linkedin.com/in/valentyn-melnychenko-778aa61b8/). Раздел направлений описывает экспертизу; он не выдаёт иллюстрации за клиентские проекты. Для раздела кейсов нужны подтверждённые ссылки, роли и разрешённые к публикации материалы.
+- app/: public pages, admin pages and API route handlers.
+- src/db/schema.ts and drizzle/: typed schema and versioned SQL migrations.
+- src/lib/: server-only database queries, auth, cache and request validation.
+- src/components/: login and owner workspace.
+- src/stores/: local preferences and admin UI filter/editor state.
+- src/styles.scss and src/styles/: SCSS design rules.
+- src/content.ts: verified profile copy; DESIGN.md: visual reference.
+- ../docs/deployment.md: server delivery, secrets, backup and rollback.
+- ../docs/learning.md: data flow and practical exercises.
 
-## Как устроена анимация
-
-3D загружается отдельным JS-модулем. Геометрия TorusKnot отражает окружение; фиолетовое освещение создаёт акцент без текстур и сторонних сервисов. Координаты курсора задают целевой угол, а интерполяция сглаживает движение. Рендер ограничен примерно 30 кадрами в секунду; за пределами viewport и в скрытой вкладке он останавливается. При выключенной анимации перерисовка происходит только при изменении размера или режима wireframe. При недоступном WebGL остаётся SVG-иллюстрация.
-
-IntersectionObserver показывает секции при прокрутке. `prefers-reduced-motion` выключает движение при первом посещении, а кнопка Motion в footer хранит настройку в localStorage. Все шрифты размещены локально: Inter, Lora Italic и IBM Plex Mono под лицензиями OFL; проприетарные шрифты референса не используются.
-
-## Проверки
-
-```powershell
-npx.cmd playwright install chromium
-npm.cmd run test:e2e
-node scripts/capture.mjs
-```
-
-Браузерные проверки охватывают WebGL и fallback, wireframe, навигацию, мобильное меню, Escape, clipboard, сохранение настройки движения, ширины 320–1440 px и автоматический аудит WCAG 2 AA / 2.1 AA. Скриншоты сохраняются в `.qa/`, а social cover — в `public/og-cover.png`. После обновления cover повторите сборку.
-
-## Деплой
-
-```powershell
-powershell.exe -ExecutionPolicy Bypass -File scripts/deploy.ps1
-```
-
-Скрипт собирает сайт, запускает проверки, отправляет архив через SSH `myvps` и активирует release в `/var/www/vmel.dev/releases/`. Nginx обслуживает `/var/www/vmel.dev/current`. Переключение — атомарная замена символической ссылки; предыдущие releases сохраняются, конфигурация Nginx получает резервную копию. При ошибке проверки конфигурация откатывается. Существующий `rps.vmel.dev` не затрагивается.
-
-Для отката найдите сохранённый путь в `/var/www/vmel.dev/backups/previous-<release>.txt`, создайте новую символическую ссылку на него и атомарно замените `current`. JS и CSS имеют хэшированные имена; HTML не кэшируется постоянно. Старые releases автоматически не удаляются.
-
-Проект статический: серверу не нужны Node.js, npm или постоянно работающий процесс приложения.
+Never run the retired static Vite deployment path. The current Docker runtime requires PostgreSQL migrations before serving the app.

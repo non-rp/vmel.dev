@@ -1,0 +1,16 @@
+*
+!Dockerfile
+!package.json
+!package-lock.json
+!.next/
+!.next/standalone/
+!.next/standalone/**
+!.next/static/
+!.next/static/**
+!public/
+!public/**
+!drizzle/
+!drizzle/**
+!scripts/
+!scripts/migrate.mjs
+!scripts/create-admin.mjs
