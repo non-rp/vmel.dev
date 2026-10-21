@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Sculpture from './Sculpture';
+import ProjectCard from './components/ProjectCard';
 import { profile } from './content';
 import { usePreferences } from './stores/preferences';
 import type { PublicProject } from './lib/project-validation';
@@ -114,14 +115,10 @@ export default function App({ projects }: { projects: PublicProject[] }) {
           if (!group.length) return null;
           return <div className="project-group" key={kind}>
             <h3 className="mono project-group-title">{kind === 'commercial' ? 'COMMERCIAL EXPERIENCE' : 'PERSONAL PROJECTS'}</h3>
-            <div className="project-grid">{group.map((project, index) => <article className="project-card" key={project.id}>
-              <div className="project-card-top mono"><span>{String(index + 1).padStart(2, '0')}</span><span>{kind === 'commercial' ? 'CASE STUDY' : 'INDEPENDENT PROJECT'}</span></div>
-              <h4><Link href={`/projects/${project.slug}`}>{project.title} <span aria-hidden="true">↗</span></Link></h4>
-              <p>{project.summary}</p><div className="tags">{project.technologies.map((technology) => <span key={technology}>{technology}</span>)}</div>
-              <Link className="text-link" href={`/projects/${project.slug}`}>Read the case <Arrow diagonal /></Link>
-            </article>)}</div>
+            <div className="project-grid">{group.slice(0, kind === 'commercial' ? 4 : 2).map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)}</div>
           </div>;
         })}
+        {projects.length > 0 && <Link className="text-link project-all-link" href="/portfolio">Explore the full portfolio <Arrow diagonal /></Link>}
       </section>
 
       <section id="expertise" className="expertise container section" aria-labelledby="expertise-heading">

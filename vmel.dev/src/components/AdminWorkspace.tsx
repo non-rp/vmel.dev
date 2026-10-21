@@ -94,7 +94,7 @@ export default function AdminWorkspace({ initialProjects, ownerName }: { initial
           <label>Order<input name="sortOrder" type="number" min={0} max={10000} defaultValue={selected?.sortOrder ?? projects.length} required /></label>
           <label>Demo URL<input name="demoUrl" type="url" defaultValue={selected?.demoUrl || ''} placeholder="https://…" /></label>
           <label>Repository URL<input name="repositoryUrl" type="url" defaultValue={selected?.repositoryUrl || ''} placeholder="https://…" /></label>
-          <p className="admin-hint">Links are available for personal projects. Commercial cases remain anonymized.</p>
+          <p className="admin-hint">Public links are available for personal projects. Add commercial case titles only when attribution is approved.</p>
           <button className="admin-button" disabled={busy}>{busy ? 'Saving…' : selected ? 'Save project' : 'Create project'}</button>
         </form>
       </section>

@@ -9,7 +9,7 @@ const valid = {
 };
 
 describe('project publication boundaries', () => {
-  it('normalizes empty links and accepts an anonymized commercial draft', () => {
+  it('normalizes empty links and accepts a commercial draft', () => {
     expect(projectInput.parse(valid).demoUrl).toBeNull();
   });
   it('rejects identifying links on commercial cases', () => {

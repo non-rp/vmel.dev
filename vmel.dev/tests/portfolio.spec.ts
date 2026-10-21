@@ -67,3 +67,22 @@ test('a WebGL failure preserves the page and the illustrated fallback', async ({
   await expect(page.locator('.sculpture-fallback')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Let’s talk' })).toHaveAttribute('href', /linkedin.com/);
 });
+
+test('portfolio showcases published work and keeps case pages out of search results', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/portfolio');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Work that');
+  await expect(page.locator('.showcase-card')).toHaveCount(5);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.locator('.showcase-card img').first()).toHaveJSProperty('complete', true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole('link', { name: 'View CogniAgent · platform migration case study' }).click();
+  await expect(page).toHaveURL(/\/projects\/cogniagent-platform-migration$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('CogniAgent · platform migration');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.locator('.case-body')).toContainText('12 hours');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  expect(results.violations).toEqual([]);
+});
