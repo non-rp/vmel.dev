@@ -15,7 +15,7 @@ export const projectInput = z.object({
   repositoryUrl: optionalUrl,
 }).strict().superRefine((value, context) => {
   if (value.kind === 'commercial' && (value.demoUrl || value.repositoryUrl)) {
-    context.addIssue({ code: 'custom', message: 'Commercial cases currently stay anonymized; leave public links empty', path: ['demoUrl'] });
+    context.addIssue({ code: 'custom', message: 'Commercial cases do not support public links; leave them empty', path: ['demoUrl'] });
   }
 });
 

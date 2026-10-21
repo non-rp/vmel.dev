@@ -1,6 +1,6 @@
 # vmel.dev
 
-Senior full-stack portfolio and owner workspace. Commercial cases are anonymized; personal projects can link to source and demos. No CV, client source, invented metrics or private assets are published.
+Senior full-stack portfolio and owner workspace. Selected commercial clients are named with the owner's approval; personal projects can link to source and demos. No CV, client source, invented metrics or private assets are published.
 
 ## Stack
 
