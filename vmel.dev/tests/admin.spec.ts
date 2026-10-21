@@ -53,9 +53,11 @@ test('authentication, owner editing, draft privacy, cache invalidation and order
     expect(second.status()).toBe(201);
     const another = await second.json();
     expect((await api.post('/api/admin/projects/reorder', { data: { ids: [another.id] }, headers: { Origin: origin } })).status()).toBe(409);
-    expect((await api.post('/api/admin/projects/reorder', { data: { ids: [another.id, project.id] }, headers: { Origin: origin } })).status()).toBe(200);
+    const allProjects = await (await api.get('/api/admin/projects')).json();
+    const remainingIds = allProjects.map((item: { id: string }) => item.id).filter((id: string) => id !== another.id && id !== project.id);
+    expect((await api.post('/api/admin/projects/reorder', { data: { ids: [another.id, project.id, ...remainingIds] }, headers: { Origin: origin } })).status()).toBe(200);
     const sorted = await (await api.get('/api/admin/projects')).json();
-    expect(sorted.map((item: { id: string }) => item.id)).toEqual([another.id, project.id]);
+    expect(sorted.map((item: { id: string }) => item.id)).toEqual([another.id, project.id, ...remainingIds]);
     expect((await api.patch(`/api/admin/projects/${project.id}`, { data: { ...data, status: 'draft' }, headers: { Origin: origin } })).status()).toBe(200);
     expect(await (await request.get('/')).text()).not.toContain(data.title);
     expect((await request.get(`/projects/${data.slug}`)).status()).toBe(404);

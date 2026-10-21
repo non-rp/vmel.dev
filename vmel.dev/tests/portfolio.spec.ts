@@ -72,7 +72,9 @@ test('portfolio showcases published work and keeps case pages out of search resu
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/portfolio');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Work that');
-  await expect(page.locator('.showcase-card')).toHaveCount(5);
+  for (const title of ['CogniAgent · platform redesign', 'CogniAgent · platform migration', 'Glorium Technologies · legacy modernization', 'MIN · international commerce', 'Myco Meditations · continuous redesign']) {
+    await expect(page.getByRole('link', { name: `View ${title} case study` })).toBeVisible();
+  }
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   await expect(page.locator('.showcase-card img').first()).toHaveJSProperty('complete', true);
   await page.setViewportSize({ width: 390, height: 844 });
