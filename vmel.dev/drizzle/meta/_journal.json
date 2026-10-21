@@ -15,6 +15,34 @@
       "when": 1792670400000,
       "tag": "0001_commercial_case_studies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792692000000,
+      "tag": "0002_deeper_case_studies",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792695600000,
+      "tag": "0003_centrum_forme",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792699200000,
+      "tag": "0004_early_commerce",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792702800000,
+      "tag": "0005_myco_stack_clarity",
+      "breakpoints": true
     }
   ]
 }
