@@ -72,11 +72,18 @@ test('portfolio showcases published work and keeps case pages out of search resu
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/portfolio');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Work that');
-  for (const title of ['CogniAgent · platform redesign', 'CogniAgent · platform migration', 'Glorium Technologies · legacy modernization', 'MIN · international commerce', 'Myco Meditations · continuous redesign']) {
+  for (const title of ['CogniAgent · platform redesign', 'CogniAgent · platform migration', 'Glorium Technologies · legacy modernization', 'MIN · international commerce', 'Myco Meditations · continuous redesign', 'Centrum ForMe · editorial platform', 'Sumy Pizza · food delivery storefront', 'LiliStudio · craft supplies storefront']) {
     await expect(page.getByRole('link', { name: `View ${title} case study` })).toBeVisible();
   }
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   await expect(page.locator('.showcase-card img').first()).toHaveJSProperty('complete', true);
+  await expect(page.getByRole('heading', { name: 'Where the craft began.' })).toBeVisible();
+  for (const visual of await page.locator('.showcase-card img').all()) {
+    await visual.scrollIntoViewIfNeeded();
+    await expect.poll(() => visual.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: test.info().outputPath('portfolio.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.getByRole('link', { name: 'View CogniAgent · platform migration case study' }).click();
@@ -84,7 +91,18 @@ test('portfolio showcases published work and keeps case pages out of search resu
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('CogniAgent · platform migration');
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   await expect(page.locator('.case-body')).toContainText('12 hours');
+  await expect(page.locator('.case-body h2')).toHaveCount(4);
+  await expect(page.getByRole('heading', { name: 'The publishing platform I led' })).toBeVisible();
+  await expect(page.locator('.case-gallery img')).toHaveCount(1);
+  await expect(page.locator('.case-gallery figcaption')).toContainText('CURRENT PUBLIC SITE');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(results.violations).toEqual([]);
+  await page.screenshot({ path: test.info().outputPath('case-mobile.png'), fullPage: true });
+  for (const slug of ['cogniagent-gutenberg-redesign', 'gloriumtech-legacy-modernization', 'min-commerce-multisite', 'myco-meditations-redesign', 'centrum-forme-editorial-platform', 'sumy-pizza-storefront', 'lilistudio-storefront']) {
+    await page.goto(`/projects/${slug}`);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    await expect(page.locator('.case-body h2').first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `Overflow on ${slug}`).toBe(true);
+  }
 });

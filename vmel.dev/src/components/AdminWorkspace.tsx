@@ -88,7 +88,7 @@ export default function AdminWorkspace({ initialProjects, ownerName }: { initial
           <label>Slug<input name="slug" defaultValue={selected?.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" minLength={2} maxLength={80} required /></label>
           <label>Summary<textarea name="summary" defaultValue={selected?.summary} rows={3} minLength={10} maxLength={400} required /></label>
           <label>Case study<textarea name="body" defaultValue={selected?.body} rows={8} minLength={10} maxLength={20000} required /></label>
-          <p className="admin-hint">Describe the problem, your responsibilities, the decisions and verified results. Separate paragraphs with a blank line.</p>
+          <p className="admin-hint">Start sections with ## Heading. Separate paragraphs or bullet lists with a blank line; start each bullet with - . Describe your decisions and verified results.</p>
           <label>Technologies<input name="technologies" defaultValue={selected?.technologies.join(', ')} placeholder="Next.js, PostgreSQL, Drizzle" /></label>
           <div className="admin-field-pair"><label>Type<select name="kind" defaultValue={selected?.kind || 'commercial'}><option value="commercial">Commercial</option><option value="personal">Personal</option></select></label><label>Visibility<select name="status" defaultValue={selected?.status || 'draft'}><option value="draft">Draft</option><option value="published">Published</option></select></label></div>
           <label>Order<input name="sortOrder" type="number" min={0} max={10000} defaultValue={selected?.sortOrder ?? projects.length} required /></label>
