@@ -109,7 +109,7 @@ test('portfolio showcases published work and keeps case pages out of search resu
   await page.goto('/projects/todos-tambien-business-platform');
   await expect(page.locator('.case-body')).toContainText('personal dashboard');
   await expect(page.locator('.case-gallery img')).toHaveCount(2);
-  await expect(page.getByRole('link', { name: 'Deveit case study ↗' })).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(page.getByRole('link', { name: 'Business directory ↗' })).toHaveAttribute('rel', 'noopener noreferrer');
   for (const visual of await page.locator('.case-gallery img').all()) {
     await visual.scrollIntoViewIfNeeded();
     await expect.poll(() => visual.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
