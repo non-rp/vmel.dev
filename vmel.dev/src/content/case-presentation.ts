@@ -62,12 +62,11 @@ export const casePresentation: Record<string, CasePresentation> = {
     result: { label: 'PLATFORM CAPABILITY', value: 'From owner form to approved page', detail: 'A business owner could create and later manage a page, with publication controlled by administrator review.' },
     system: { title: 'The publishing loop I built', steps: ['Owner account and page form', 'Media and location data', 'Administrator review', 'Published page, directory and edits'] },
     gallery: [
-      { src: '/projects/todos-tambien-form.png', alt: 'Business page creation form shown on desktop and mobile', caption: 'PUBLIC DEVEIT CASE STUDY / The business registration form.' },
-      { src: '/projects/todos-tambien-landing.png', alt: 'Business landing page layout shown on desktop and mobile', caption: 'PUBLIC DEVEIT CASE STUDY / The resulting business landing page.' },
+      { src: '/projects/todos-tambien-form.png', alt: 'Business page creation form shown on desktop and mobile', caption: 'BUSINESS PAGE FORM / Owners create and submit their page.' },
+      { src: '/projects/todos-tambien-landing.png', alt: 'Business landing page layout shown on desktop and mobile', caption: 'BUSINESS LANDING PAGE / The published result.' },
     ],
-    visualNote: 'Images come from Deveit’s public project case study and show its earlier design, not a current capture of the live site.',
+    visualNote: 'Screens from the business page publishing flow.',
     references: [
-      { href: 'https://deveit.com/case-study/todos-tambien/', label: 'Deveit case study ↗' },
       { href: 'https://todostambien.ca/business/', label: 'Business directory ↗' },
     ],
   },
