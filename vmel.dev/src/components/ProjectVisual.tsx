@@ -9,6 +9,7 @@ const visuals: Record<string, { image?: string; label: string; tone: string; alt
   'centrum-forme-editorial-platform': { image: '/projects/centrumforme.jpg', label: 'Centrum ForMe / Current public site', tone: 'centrum' },
   'sumy-pizza-storefront': { image: '/projects/sumy-pizza.png', label: 'Sumy Pizza / Archival screenshot', tone: 'sumy', alt: 'Archived sushi product listing from the Sumy Pizza food delivery store' },
   'lilistudio-storefront': { image: '/projects/lilistudio.jpg', label: 'LiliStudio / Current public site', tone: 'lili' },
+  'todos-tambien-business-platform': { image: '/projects/todos-tambien-map.png', label: 'Todos También / Deveit case study visual', tone: 'todos', alt: 'Todos También business directory and interactive map shown in the public Deveit case study' },
 };
 
 export default function ProjectVisual({ slug, title, priority = false }: { slug: string; title: string; priority?: boolean }) {

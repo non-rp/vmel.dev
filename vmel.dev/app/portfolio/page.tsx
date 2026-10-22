@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Selected work', description: 'Select
 
 export default async function PortfolioPage() {
   const projects = await getPublishedProjects();
-  const earlierSlugs = new Set(['centrum-forme-editorial-platform', 'sumy-pizza-storefront', 'lilistudio-storefront']);
+  const earlierSlugs = new Set(['todos-tambien-business-platform', 'centrum-forme-editorial-platform', 'sumy-pizza-storefront', 'lilistudio-storefront']);
   const selected = projects.filter((project) => project.kind === 'commercial' && !earlierSlugs.has(project.slug));
   const earlier = projects.filter((project) => earlierSlugs.has(project.slug));
   const personal = projects.filter((project) => project.kind === 'personal');
