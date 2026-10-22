@@ -3,6 +3,8 @@ type CasePresentation = {
   result: { label: string; value: string; detail: string };
   system: { title: string; steps: string[] };
   gallery: { src: string; alt: string; caption: string }[];
+  visualNote?: string;
+  references?: { href: string; label: string }[];
 };
 
 export const casePresentation: Record<string, CasePresentation> = {
@@ -47,11 +49,26 @@ export const casePresentation: Record<string, CasePresentation> = {
     result: { label: 'PROJECT TYPE', value: 'Local food delivery', detail: 'An archived example of an ordering-focused storefront from my early commerce work.' },
     system: { title: 'A clear route to an order', steps: ['Food categories', 'Product listings', 'Product selection', 'Cart and ordering entry'] },
     gallery: [{ src: '/projects/sumy-pizza-detail.png', alt: 'Archived pizza product listing with prices and order buttons', caption: 'ARCHIVAL SCREENSHOT / Product catalogue from an earlier version.' }],
+    visualNote: 'Images are archival screenshots from an earlier version of the storefront.',
   },
   'lilistudio-storefront': {
     role: 'Early e-commerce development',
     result: { label: 'PROJECT TYPE', value: 'Craft supplies catalogue', detail: 'A category-heavy storefront for handmade and decoration materials.' },
     system: { title: 'Catalogue-led discovery', steps: ['Category navigation', 'Search and browse', 'Product listings', 'Basket entry'] },
     gallery: [],
+  },
+  'todos-tambien-business-platform': {
+    role: 'Publishing system owner and client-facing developer',
+    result: { label: 'PLATFORM CAPABILITY', value: 'From owner form to approved page', detail: 'A business owner could create and later manage a page, with publication controlled by administrator review.' },
+    system: { title: 'The publishing loop I built', steps: ['Owner account and page form', 'Media and location data', 'Administrator review', 'Published page, directory and edits'] },
+    gallery: [
+      { src: '/projects/todos-tambien-form.png', alt: 'Business page creation form shown on desktop and mobile', caption: 'PUBLIC DEVEIT CASE STUDY / The business registration form.' },
+      { src: '/projects/todos-tambien-landing.png', alt: 'Business landing page layout shown on desktop and mobile', caption: 'PUBLIC DEVEIT CASE STUDY / The resulting business landing page.' },
+    ],
+    visualNote: 'Images come from Deveit’s public project case study and show its earlier design, not a current capture of the live site.',
+    references: [
+      { href: 'https://deveit.com/case-study/todos-tambien/', label: 'Deveit case study ↗' },
+      { href: 'https://todostambien.ca/business/', label: 'Business directory ↗' },
+    ],
   },
 };

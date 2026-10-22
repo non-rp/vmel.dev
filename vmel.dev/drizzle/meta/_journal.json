@@ -43,6 +43,13 @@
       "when": 1792702800000,
       "tag": "0005_myco_stack_clarity",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792785600000,
+      "tag": "0006_todos_tambien",
+      "breakpoints": true
     }
   ]
 }
