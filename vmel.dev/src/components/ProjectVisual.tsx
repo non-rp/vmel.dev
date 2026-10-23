@@ -10,6 +10,7 @@ const visuals: Record<string, { image?: string; label: string; tone: string; alt
   'sumy-pizza-storefront': { image: '/projects/sumy-pizza.png', label: 'Sumy Pizza / Archival screenshot', tone: 'sumy', alt: 'Archived sushi product listing from the Sumy Pizza food delivery store' },
   'lilistudio-storefront': { image: '/projects/lilistudio.jpg', label: 'LiliStudio / Current public site', tone: 'lili' },
   'todos-tambien-business-platform': { image: '/projects/todos-tambien-map.png', label: 'Todos También / business directory', tone: 'todos', alt: 'Todos También business directory and interactive map' },
+  'reaktor-rps-statistics-platform': { image: '/projects/reaktor-rps-leaderboard.png', label: 'REAKTOR RPS / LIVE STATISTICS', tone: 'rps', alt: 'Reaktor RPS leaderboard with player rankings and date controls' },
 };
 
 export default function ProjectVisual({ slug, title, priority = false }: { slug: string; title: string; priority?: boolean }) {

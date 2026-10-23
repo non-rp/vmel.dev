@@ -70,4 +70,17 @@ export const casePresentation: Record<string, CasePresentation> = {
       { href: 'https://todostambien.ca/business/', label: 'Business directory ↗' },
     ],
   },
+  'reaktor-rps-statistics-platform': {
+    role: 'Solo full-stack developer',
+    result: { label: 'DELIVERY WINDOW', value: 'One week', detail: 'The first complete platform was built during the March 2026 assignment window, with later refinements tracked in the repository.' },
+    system: { title: 'From upstream events to useful rankings', steps: ['Cursor-based history sync', 'Validated matches and daily stats', 'Bounded live ingestion and cached polling', 'Five views, tests and VPS delivery'] },
+    gallery: [
+      { src: '/projects/reaktor-rps-latest.png', alt: 'Latest rock-paper-scissors matches and cache refresh status', caption: 'LATEST MATCHES / A bounded live refresh updates the cache.' },
+      { src: '/projects/reaktor-rps-date.png', alt: 'Rock-paper-scissors match results filtered by date', caption: 'MATCH HISTORY / Results for a chosen day.' },
+      { src: '/projects/reaktor-rps-player.png', alt: 'Rock-paper-scissors match results filtered by player', caption: 'PLAYER VIEW / One player’s match history.' },
+      { src: '/projects/reaktor-rps-today.png', alt: 'Today’s rock-paper-scissors leaderboard', caption: 'TODAY’S LEADERS / Ranked by wins.' },
+      { src: '/projects/reaktor-rps-leaderboard.png', alt: 'Rock-paper-scissors historical leaderboard with date range controls', caption: 'HISTORICAL LEADERBOARD / Rankings across a chosen period.' },
+    ],
+    visualNote: 'Screens from the statistics interface.',
+  },
 };
