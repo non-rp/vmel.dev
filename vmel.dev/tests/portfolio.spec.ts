@@ -79,6 +79,8 @@ test('portfolio showcases published work and keeps case pages out of search resu
   await expect(page.locator('.showcase-card img').first()).toHaveJSProperty('complete', true);
   await expect(page.getByRole('heading', { name: 'Where the craft began.' })).toBeVisible();
   await expect(page.locator('.portfolio-grid--secondary').first().locator('.showcase-card h3').first()).toHaveText('Todos También · business publishing platform');
+  await expect(page.getByRole('link', { name: 'View Reaktor RPS · statistics platform case study' })).toBeVisible();
+  await expect(page.locator('.portfolio-secondary').last().getByRole('heading', { name: 'Built on my own terms.' })).toBeVisible();
   for (const visual of await page.locator('.showcase-card img').all()) {
     await visual.scrollIntoViewIfNeeded();
     await expect.poll(() => visual.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
@@ -115,4 +117,16 @@ test('portfolio showcases published work and keeps case pages out of search resu
     await expect.poll(() => visual.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   }
   await page.screenshot({ path: test.info().outputPath('todos-mobile.png'), fullPage: true });
+  await page.goto('/projects/reaktor-rps-statistics-platform');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Reaktor RPS · statistics platform');
+  await expect(page.locator('.case-gallery img')).toHaveCount(5);
+  await expect(page.getByRole('link', { name: 'Live project ↗' })).toHaveAttribute('href', 'https://rps.vmel.dev/');
+  await expect(page.getByRole('link', { name: 'Source code ↗' })).toHaveAttribute('href', 'https://github.com/non-rp/reaktor-rps');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  for (const visual of await page.locator('.case-gallery img').all()) {
+    await visual.scrollIntoViewIfNeeded();
+    await expect.poll(() => visual.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  }
+  await page.screenshot({ path: test.info().outputPath('reaktor-rps-mobile.png'), fullPage: true });
 });
