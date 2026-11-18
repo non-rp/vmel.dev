@@ -8,6 +8,12 @@ type CasePresentation = {
 };
 
 export const casePresentation: Record<string, CasePresentation> = {
+  'custom-bigcommerce-storefront': {
+    role: 'BigCommerce Developer',
+    result: { label: 'PROJECT SCOPE', value: 'A tailored storefront', detail: 'Custom theme work and customer-group-specific shopping experiences within BigCommerce.' },
+    system: { title: 'The storefront I developed', steps: ['Stencil theme and local environment', 'Catalogue and customer journeys', 'Dealer and customer-group features', 'Responsive refinement and QA'] },
+    gallery: [],
+  },
   'cogniagent-gutenberg-redesign': {
     role: 'Full-stack implementation',
     result: { label: 'WHAT CHANGED', value: 'A reusable block system', detail: 'The redesign became an editable system for future pages, with performance, QA and SEO included in delivery.' },
