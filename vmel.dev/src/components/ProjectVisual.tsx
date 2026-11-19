@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 const visuals: Record<string, { image?: string; label: string; tone: string; alt?: string }> = {
+  'custom-bigcommerce-storefront': { image: '/projects/bigcommerce-home.jpg', label: 'BigCommerce / Current storefront', tone: 'default', alt: 'Anonymized current storefront homepage' },
   'cogniagent-gutenberg-redesign': { image: '/projects/cogniagent.jpg', label: 'CogniAgent / Current public site', tone: 'cogni' },
   'cogniagent-platform-migration': { image: '/projects/cogniagent-platform.jpg', label: 'CogniAgent / Current public site', tone: 'cogni' },
   'gloriumtech-legacy-modernization': { image: '/projects/gloriumtech.jpg', label: 'Glorium Technologies / Current public site', tone: 'glorium' },
