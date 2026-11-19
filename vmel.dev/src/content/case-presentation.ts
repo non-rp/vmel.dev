@@ -12,7 +12,11 @@ export const casePresentation: Record<string, CasePresentation> = {
     role: 'BigCommerce Developer',
     result: { label: 'PROJECT SCOPE', value: 'A tailored storefront', detail: 'Custom theme work and customer-group-specific shopping experiences within BigCommerce.' },
     system: { title: 'The storefront I developed', steps: ['Stencil theme and local environment', 'Catalogue and customer journeys', 'Dealer and customer-group features', 'Responsive refinement and QA'] },
-    gallery: [],
+    gallery: [
+      { src: '/projects/bigcommerce-home.jpg', alt: 'Anonymized current storefront homepage with product navigation', caption: 'CURRENT STOREFRONT / Homepage, edited to remove client branding.' },
+      { src: '/projects/bigcommerce-product.jpg', alt: 'Anonymized current storefront product page with product details and purchase controls', caption: 'CURRENT STOREFRONT / Product page, edited to remove client branding.' },
+    ],
+    visualNote: 'Screens show the current public storefront, edited to remove client branding. The site may have changed since the 2023 project.',
   },
   'cogniagent-gutenberg-redesign': {
     role: 'Full-stack implementation',
